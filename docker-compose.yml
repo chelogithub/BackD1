@@ -1,0 +1,70 @@
+version: '3'
+
+services:
+
+    mysql-server:   
+        image:                   mysql:5.7
+        # image:                   mysql:8
+        hostname:                mysql-server
+        environment:
+            MYSQL_ROOT_PASSWORD: userpass
+        command:                ['mysqld','--default-time-zone=-03:00']
+        volumes:
+            -                    ./db/dumps:/docker-entrypoint-initdb.d
+            -                    ./db/data:/var/lib/mysql
+        networks:
+            -                    ROE-IOT
+
+    mysql-admin:
+        # image:                   phpmyadmin/phpmyadmin
+        image:                   phpmyadmin:5.2.1
+        environment:
+                  
+            PMA_HOST:            mysql-server
+            PMA_PORT:            3306
+            MYSQL_ROOT_PASSWORD: userpass
+
+        networks:
+            -                    ROE-IOT
+        depends_on:
+            -                    mysql-server
+        ports:
+            -                    "8001:80"
+
+    mosquitto:
+        image:                  eclipse-mosquitto:2.0.17
+        container_name:         mosquitto
+        volumes:
+            -                   ./mosquitto/config:/mosquitto/config
+            -                   ./mosquitto/data:/mosquitto/data
+            -                   ./mosquitto/log:/mosquitto/log
+            -                   ./mosquitto/certs:/mosquitto/certs/
+        networks:
+            -                    ROE-IOT
+        ports:
+            -                   1883:1883
+            -                   8883:8883
+            -                   9001:9001
+        # command:                
+        # restart: unless-stopped
+
+    nodejs:
+        image:                  node:18.17.1
+        working_dir:            /home/node/app/
+                 
+        volumes:
+            -                   ./api:/home/node/app/
+        networks:
+            -                   ROE-IOT
+        depends_on:
+            # -                   mysql-server
+            -                   mosquitto
+        ports:
+            -                   "8000:3000"
+        command:                npm run dev
+
+
+
+networks:
+       ROE-IOT:
+        driver:                  bridge
