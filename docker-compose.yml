@@ -2,6 +2,8 @@ version: '3'
 
 services:
 
+
+
     mysql-server:   
         image:                   mysql:5.7
         # image:                   mysql:8
@@ -62,6 +64,19 @@ services:
         ports:
             -                   "8000:3000"
         command:                npm run dev
+
+    ngnix:
+        image:                  nginx
+        restart:                always
+        ports:                 
+            -                    "8081:80"
+        volumes:                
+            -                   /home/marcelo/Marcelo/Git_places/DAIOT/Tepelco/V01/Frontend/www:/usr/share/nginx/html
+            # -                   ./nginx:/etc/nginx/nginx.conf
+        networks:
+            -                    ROE-IOT
+        # depends_on:
+        #     -                   nodejs
 
 
 
